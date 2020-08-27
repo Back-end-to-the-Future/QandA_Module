@@ -1,6 +1,4 @@
-# Project Name
-
-> Proxy Server for Project Greenfield for team KWRN.
+# Questions and Answers Module
 
 ## Related Projects
 

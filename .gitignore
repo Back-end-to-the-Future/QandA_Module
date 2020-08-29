@@ -24,6 +24,7 @@ coverage
 build/
 dist/
 
-# secondary database files
+# database files
 mongodb.js
-
+.vscode
+*.csv

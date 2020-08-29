@@ -4,7 +4,7 @@ const fs = require('fs');
 
 let seedQuestions = 'question_body,question_date,asker_name,question_helpfulness,reported,product_id,\n';
 let seedAnswers = 'body,date,answerer_name,helpfulness,question_id,\n';
-let seedPhotos = 'link,answer_id\n';
+let seedPhotos = 'link,answer_id,\n';
 
 // SAMPLE CSV
 // question_body,question_date,asker_name,question_helpfulness,reported,product_id,
@@ -12,12 +12,13 @@ let seedPhotos = 'link,answer_id\n';
 
 // Generates the table data for questions
 const generateQuestions = () => {
-  for (let i = 0; i < 10; i += 1) {
+  for (let i = 0; i < 50; i += 1) {
     const questionBodyLength = Math.floor(Math.random() * (13 - 3 + 1)) + 3;
     const helpfulnessCount = Math.floor(Math.random() * 30);
+    const productID = Math.floor(Math.random() * 25);
 
     seedQuestions = seedQuestions.concat(
-      `${faker.lorem.words(questionBodyLength)}?,${faker.date.past()},${faker.name.firstName()} ${faker.name.lastName()},${helpfulnessCount},0,${i}\n`,
+      `${faker.lorem.words(questionBodyLength)}?,${faker.date.past()},${faker.name.firstName()} ${faker.name.lastName()},${helpfulnessCount},0,${productID}\n`,
     );
   }
 
@@ -30,13 +31,13 @@ const generateQuestions = () => {
 
 // Generates the table data for answers
 const generateAnswers = () => {
-  for (let i = 0; i < 10; i += 1) {
+  for (let i = 0; i < 50; i += 1) {
     const answerBodyLength = Math.floor(Math.random() * (13 - 3 + 1)) + 3;
     const helpfulnessCount = Math.floor(Math.random() * 30);
-    // const questionID = Math.floor(Math.random() );
+    const questionID = Math.floor(Math.random() * (50 - 1 + 1)) + 1;
 
     seedAnswers = seedAnswers.concat(
-      `${faker.lorem.words(answerBodyLength)}?,${faker.date.past()},${faker.name.firstName()} ${faker.name.lastName()},${helpfulnessCount},\n`,
+      `${faker.lorem.words(answerBodyLength)}?,${faker.date.past()},${faker.name.firstName()} ${faker.name.lastName()},${helpfulnessCount},${questionID}\n`,
     );
   }
 
@@ -48,9 +49,11 @@ const generateAnswers = () => {
 };
 
 const generatePhotos = () => {
-  for (let i = 0; i < 1; i += 1) {
+  for (let i = 0; i < 50; i += 1) {
+    const answerID = Math.floor(Math.random() * (50 - 1 + 1)) + 1;
+
     seedPhotos = seedPhotos.concat(
-      `${faker.image.imageUrl()},${i},\n`,
+      `${faker.image.imageUrl()},${answerID}\n`,
     );
   }
 
@@ -63,6 +66,4 @@ const generatePhotos = () => {
 
 // generateQuestions();
 // generateAnswers();
-// generatePhotos();
-
-console.log(faker.address.streetAddress());
+generatePhotos();

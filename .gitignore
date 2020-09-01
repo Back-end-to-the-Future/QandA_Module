@@ -28,3 +28,4 @@ dist/
 mongodb.js
 .vscode
 *.csv
+db.js

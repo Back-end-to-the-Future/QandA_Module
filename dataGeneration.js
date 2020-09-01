@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 const faker = require('faker');
 const fs = require('fs');
+const moment = require('moment');
 
 let seedQuestions = 'question_body,question_date,asker_name,question_helpfulness,reported,product_id,\n';
 let seedAnswers = 'body,date,answerer_name,helpfulness,question_id,\n';
@@ -18,7 +19,7 @@ const generateQuestions = () => {
     const productID = Math.floor(Math.random() * 25);
 
     seedQuestions = seedQuestions.concat(
-      `${faker.lorem.words(questionBodyLength)}?,${faker.date.past()},${faker.name.firstName()} ${faker.name.lastName()},${helpfulnessCount},0,${productID}\n`,
+      `${faker.lorem.words(questionBodyLength)}?,${moment(faker.date.past()).format('YYYY-MM-DD')},${faker.name.firstName()} ${faker.name.lastName()},${helpfulnessCount},0,${productID}\n`,
     );
   }
 
@@ -37,7 +38,7 @@ const generateAnswers = () => {
     const questionID = Math.floor(Math.random() * (50 - 1 + 1)) + 1;
 
     seedAnswers = seedAnswers.concat(
-      `${faker.lorem.words(answerBodyLength)}?,${faker.date.past()},${faker.name.firstName()} ${faker.name.lastName()},${helpfulnessCount},${questionID}\n`,
+      `${faker.lorem.words(answerBodyLength)}?,${moment(faker.date.past()).format('YYYY-MM-DD')},${faker.name.firstName()} ${faker.name.lastName()},${helpfulnessCount},${questionID}\n`,
     );
   }
 
@@ -64,6 +65,9 @@ const generatePhotos = () => {
   });
 };
 
-// generateQuestions();
-// generateAnswers();
-generatePhotos();
+generateQuestions();
+generateAnswers();
+// generatePhotos();
+
+// faker.locale = 'us';
+// console.log(moment(faker.date.past()).format('YYYY MM DD'));

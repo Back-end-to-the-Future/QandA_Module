@@ -5,6 +5,7 @@ const express = require('express');
 const app = express();
 const path = require('path');
 const dummy = require('../dummyData.js');
+const pool = require('../db.js');
 
 // const apiUrl = 'http://52.26.193.201:3000/';
 const port = 3000;
@@ -30,26 +31,109 @@ app.get('/qaModule', (req, res) => {
 app.get(`${prefix}/questions`, async (req, res) => {
   // Undetermined if values below will remain needed or not yet
   // const { qLimit, aLimit, product_id } = req.query;
-  // Dummy data
-  const data = dummy.dummyQuestions;
-  // Dummy questions
-  const questions = data.results;
-  // A boolean from legacy code that is supposed to deal with whether there is more questions than
-  // what should be shown somehow? Scrap or keep?
-  const isMoreQuestions = false;
+  const { product_id } = req.query;
+  // const isMoreQuestions = false;
+  // let questionsResult = '';
+  let mainQuestions = '';
+  const questionIDs = [];
+  // const answers = [];
 
-  // Client currently expects questions and isMoreQuestions
-  res.send({ questions, isMoreQuestions });
+  const questionsQuery = {
+    name: 'fetch-questions',
+    text: 'SELECT * FROM q_and_a_schema.questions WHERE product_id = $1',
+    values: [`${product_id}`],
+  };
+
+  pool.query(questionsQuery)
+    .then((response) => {
+      mainQuestions = response.rows;
+      mainQuestions.forEach((el) => {
+        questionIDs.push(el.question_id);
+      });
+      return mainQuestions;
+    })
+    .then((QData) => {
+      const question = mainQuestions;
+      // console.log(QData);
+      for (let i = 0; i < mainQuestions.length; i += 1) {
+        const answersQuery = {
+          name: 'fetch-answers',
+          text: 'SELECT * FROM q_and_a_schema.answers WHERE question_id = $1',
+          values: [`${questionIDs[i]}`],
+        };
+
+        pool.query(answersQuery)
+          .then((data) => {
+            if (question[i].question_id == questionIDs[i]) {
+              if (question[i].answer === undefined) {
+                question[i].answers = {};
+                question[i].answers[data.rows[i].id] = data.rows[i];
+                // console.log(data.rows[i]);
+                // question[i].answer.push(data.rows[i]);
+              } else {
+                // question[i].answer.push(data.rows[i]);
+                question[i].answers[data.rows[i].id] = data.rows[i];
+              }
+            }
+
+            if (i + 1 === question.length) {
+              const questions = question;
+              console.log(questions);
+              res.send({ questions });
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+
+  // Dummy data
+  // const data = dummy.dummyQuestions;
+  // // Dummy questions
+  // const questions = data.results;
+  // // res.send(questions)
+  // A boolean from legacy code that is supposed to deal with whether there is more questions than
+  // // what should be shown somehow? Scrap or keep?
+  // const isMoreQuestions = false;
+
+  // // Client currently expects questions and isMoreQuestions
+  // res.send({ questions });
 });
 
 app.get(`${prefix}/moreAnswers`, (req, res) => {
   // Undetermined if values below will remain needed or not yet
   // const { question_id } = req.query;
+  // const isMoreAnswers = false;
+  // console.log(question_id);
+
+  // let answers = '';
+  // const query = {
+  //   name: 'fetch-answers',
+  //   text: 'SELECT * FROM q_and_a_schema.answers WHERE question_id = $1',
+  //   values: [`${question_id}`],
+  // };
+  // console.log(query);
+
+  // pool.query(query)
+  //   .then((response) => {
+  //     answers = response.rows;
+  //     console.log(answers);
+  //     res.send({ answers });
+  //   })
+  //   .catch((err) => {
+  //     console.log(err);
+  //   });
+
   // Dummy data
   const data = dummy.dummyAnswers;
   // Dummy answers
   const { answers } = data;
-  // A boolean from legacy code that is supposed to deal with whether there is more answers than
+  // A boolean from legacy code that is supposed to deal with whether
+  // there is more answers than
   // what should be shown somehow? Scrap or keep?
   const isMoreAnswers = false;
 

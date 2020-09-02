@@ -142,5 +142,5 @@ module.exports.dummyAnswers = {
       photos: [],
     },
   ],
-  isMoreAnswers: false,
+  // isMoreAnswers: false,
 };

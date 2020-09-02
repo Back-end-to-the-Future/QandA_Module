@@ -24,3 +24,8 @@ coverage
 build/
 dist/
 
+# database files
+mongodb.js
+.vscode
+*.csv
+db.js

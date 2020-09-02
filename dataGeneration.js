@@ -1,3 +1,4 @@
+/* eslint-disable no-loop-func */
 /* eslint-disable no-console */
 const faker = require('faker');
 const fs = require('fs');
@@ -36,6 +37,18 @@ const generateAnswers = () => {
     const answerBodyLength = Math.floor(Math.random() * (13 - 3 + 1)) + 3;
     const helpfulnessCount = Math.floor(Math.random() * 30);
     const questionID = Math.floor(Math.random() * (50 - 1 + 1)) + 1;
+    const photoURLs = () => {
+      const arr = [];
+      const rand = Math.floor(Math.random() * (4 - 0) + 0);
+
+      for (let j = 0; j < rand; j += 1) {
+        // arr = arr.concat(`${faker.image.imageUrl()} `);
+        arr.push(faker.image.imageUrl());
+      }
+
+      // arr = arr.trim();
+      return arr;
+    };
 
     seedAnswers = seedAnswers.concat(
       `${faker.lorem.words(answerBodyLength)}?,${moment(faker.date.past()).format('YYYY-MM-DD')},${faker.name.firstName()} ${faker.name.lastName()},${helpfulnessCount},${questionID}\n`,
@@ -65,9 +78,52 @@ const generatePhotos = () => {
   });
 };
 
-generateQuestions();
+// Generates the table data for answers
+// const generateJSONAnswers = () => {
+//   let data = '[\n{';
+//   for (let i = 0; i < 10; i += 1) {
+//     const answerBodyLength = Math.floor(Math.random() * (13 - 3 + 1)) + 3;
+//     const helpfulnessCount = Math.floor(Math.random() * 30);
+//     const questionID = Math.floor(Math.random() * (50 - 1 + 1)) + 1;
+//     const photoURLs = () => {
+//       const arr = [];
+//       const rand = Math.floor(Math.random() * (4 - 0) + 0);
+
+//       for (let j = 0; j < rand; j += 1) {
+//         // arr = arr.concat(`${faker.image.imageUrl()} `);
+//         arr.push(faker.image.imageUrl());
+//       }
+
+//       // arr = arr.trim();
+//       return arr;
+//     };
+
+//     const buildJSON = () => {
+//       const cols = ['"body"', '"date"', '"answerer_name"', '"helpfulness"', '"question_id"', '"photos"'];
+//       const fn = [`"${faker.lorem.words(answerBodyLength)},"`, `"${moment(faker.date.past()).format('YYYY-MM-DD')},"`,
+//         `"${faker.name.firstName()} ${faker.name.lastName()},"`, `${helpfulnessCount},`, `${questionID}`, `[${photoURLs()}],`,'\n}'];
+
+//       for (let j = 0; j < fn.length; j += 1) {
+//         data = data.concat(`\n${cols[j]}: ${fn[j]}`);
+//       }
+//       data = data.concat('\n]');
+
+//       return data;
+//     };
+//     buildJSON();
+//   }
+//   console.log(data);
+//   fs.writeFile('./fakerAnswers.json', data, (err) => {
+//     if (err) {
+//       console.log(err);
+//     }
+//   });
+// };
+// generateJSONAnswers();
+// generateQuestions();
 generateAnswers();
 // generatePhotos();
 
 // faker.locale = 'us';
-// console.log(moment(faker.date.past()).format('YYYY MM DD'));
+
+// console.log(photoURLs());

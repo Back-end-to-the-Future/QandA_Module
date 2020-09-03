@@ -32,7 +32,7 @@ class Question extends React.Component {
     if (!_.isEqual(this.props, prevProps)) {
       this.setState({
         question: this.props.question,
-        // isMoreAnswers: this.props.question.answers.isMoreAnswers,
+        isMoreAnswers: this.props.question.answers.isMoreAnswers,
         helpfulness: this.props.question.question_helpfulness,
         helpfulClicked: false,
         reported: false,

@@ -47,7 +47,7 @@ app.get(`${prefix}/questions`, async (req, res) => {
   // QUESTIONS QUERY
   const questionsQuery = {
     name: 'fetch-questions',
-    text: 'SELECT * FROM q_and_a_schema.questions WHERE product_id = $1',
+    text: 'SELECT * FROM q_and_a_schema.questions WHERE product_id = $1 AND reported = 0',
     values: [`${product_id}`],
   };
 
@@ -55,7 +55,9 @@ app.get(`${prefix}/questions`, async (req, res) => {
     .then((response) => {
       questions = response.rows;
       questions.forEach((el) => {
-        questionIDs.push(el.question_id);
+        if (el.reported === 0) {
+          questionIDs.push(el.question_id);
+        }
       });
     })
     .catch((err) => {
@@ -65,6 +67,7 @@ app.get(`${prefix}/questions`, async (req, res) => {
   // ANSWERS QUERY
   async function asyncForEach(array, callback) {
     for (let index = 0; index < array.length; index += 1) {
+      // eslint-disable-next-line no-await-in-loop
       await callback(array[index], index, array);
     }
   }
@@ -128,7 +131,7 @@ app.get(`${prefix}/questions`, async (req, res) => {
         questions.map((question) => {
           const modifiedQuestion = question;
 
-          for (let key in modifiedQuestion.answers) {
+          for (const key in modifiedQuestion.answers) {
             if (modifiedQuestion.answers[key].photos === undefined) {
               modifiedQuestion.answers[key].photos = [];
 
@@ -150,7 +153,6 @@ app.get(`${prefix}/questions`, async (req, res) => {
         });
       })
       .then(() => {
-        console.log(questions[1]);
         if (i + 1 === answerIDs.length) {
           res.send({ questions });
         }
@@ -173,29 +175,89 @@ app.get(`${prefix}/questions`, async (req, res) => {
   // res.send({ questions });
 });
 
-app.get(`${prefix}/moreAnswers`, (req, res) => {
+app.get(`${prefix}/moreAnswers`, async (req, res) => {
+  // ---------------------------------------------------------------
+
+  // THIS ROUTE IS POTENTIALLY NOT ABLE TO BE IMPLEMENTED WITHOUT CLIENTSIDE REFACTOR
+
+  // ---------------------------------------------------------------
   // Undetermined if values below will remain needed or not yet
   const { question_id } = req.query;
   const isMoreAnswers = false;
   // console.log(question_id);
+  const answerIDs = [];
+  const answers = {};
 
-  let answers = '';
-  const query = {
+  // const getAnswers = async () => {
+  // await asyncForEach(questionIDs, async (el) => {
+  const answersQuery = {
     name: 'fetch-answers',
     text: 'SELECT * FROM q_and_a_schema.answers WHERE question_id = $1',
     values: [`${question_id}`],
   };
-  // console.log(query);
 
-  pool.query(query)
-    .then((response) => {
-      answers = response.rows;
-      console.log(answers);
-      res.send({ answers, isMoreAnswers });
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+  // await pool.query(answersQuery)
+  //   .then((answerData) => {
+  //     // console.log(answers.rows)
+  //     // Store answer ID's needed for photos query
+  //     answerData.rows.forEach((ansId) => {
+  //       answerIDs.push(ansId.id);
+  //     });
+  //     return answerData;
+  //   })
+  //   .then((answersData) => {
+  //     // console.log(answersData.rows);
+  //     answers = answersData.rows;
+  //   })
+  //   .catch((err) => {
+  //     console.log(err);
+  //   });
+
+  // // console.log(answers);
+  // // PHOTOS QUERY
+  // answerIDs.forEach((ansID, i) => {
+  //   const photoQuery = {
+  //     name: 'fetch-photos',
+  //     text: 'SELECT * FROM q_and_a_schema.photos WHERE answer_id = $1',
+  //     values: [`${ansID}`],
+  //   };
+
+  //   pool.query(photoQuery)
+  //     .then((photos) => {
+  //       // photos have answer id and must match answers id number
+  //       // questions.map((question) => {
+  //       const modifiedAnswer = answer;
+
+  //       for (const key in modifiedQuestion.answers) {
+  //         if (modifiedQuestion.answers[key].photos === undefined) {
+  //           modifiedQuestion.answers[key].photos = [];
+
+  //           photos.rows.forEach((photo) => {
+  //             // eslint-disable-next-line max-len
+  //             if (key == photo.answer_id && !modifiedQuestion.answers[key].photos.hasOwnProperty()) {
+  //               modifiedQuestion.answers[key].photos.push(photo.link);
+  //             }
+  //           });
+  //         } else {
+  //           photos.rows.forEach((photo) => {
+  //             if (key == photo.answer_id) {
+  //               modifiedQuestion.answers[key].photos.push(photo.link);
+  //             }
+  //           });
+  //         }
+  //       }
+  //       return modifiedQuestion;
+  //       // });
+  //     })
+  //     .then(() => {
+  //       if (i + 1 === answerIDs.length) {
+  //         // res.send({ answers, isMoreAnswers });
+  //       }
+  //     })
+  //     .catch((err) => {
+  //       console.log(err);
+  //     });
+  // });
 
   // Dummy data
   // const data = dummy.dummyAnswers;
@@ -211,21 +273,24 @@ app.get(`${prefix}/moreAnswers`, (req, res) => {
 
 app.put(`${prefix}/answer/helpful`, (req, res) => {
   // Undetermined if values below will remain needed or not yet
-  // const { answer_id } = req.body;
+  const { answer_id } = req.body;
+  pool.query(`UPDATE q_and_a_schema.answers SET helpfulness = helpfulness + 1 WHERE id = ${answer_id}`);
   res.sendStatus(204);
 });
 
 // ROUTE TO REPORT QUESTIONS
 app.put(`${prefix}/question/report`, (req, res) => {
   // Undetermined if values below will remain needed or not yet
-  // const { question_id } = req.body;
+  const { question_id } = req.body;
+  pool.query(`UPDATE q_and_a_schema.questions SET reported = reported + 1 WHERE question_id = ${question_id}`);
   res.sendStatus(204);
 });
 
 // ROUTE TO REPORT ANSWERS
 app.put(`${prefix}/answer/report`, (req, res) => {
   // Undetermined if values below will remain needed or not yet
-  // const { answer_id } = req.body;
+  const { answer_id } = req.body;
+  pool.query(`UPDATE q_and_a_schema.answers SET reported = reported + 1 WHERE question_id = ${question_id}`);
   res.sendStatus(204);
 });
 

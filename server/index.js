@@ -1,3 +1,4 @@
+/* eslint-disable no-shadow */
 /* eslint-disable no-param-reassign */
 /* eslint-disable eqeqeq */
 /* eslint-disable guard-for-in */
@@ -6,6 +7,7 @@
 /* eslint-disable import/extensions */
 /* eslint-disable camelcase */
 const express = require('express');
+const moment = require('moment');
 
 const app = express();
 const path = require('path');
@@ -76,7 +78,7 @@ app.get(`${prefix}/questions`, async (req, res) => {
     await asyncForEach(questionIDs, async (el) => {
       const answersQuery = {
         name: 'fetch-answers',
-        text: 'SELECT * FROM q_and_a_schema.answers WHERE question_id = $1',
+        text: 'SELECT * FROM q_and_a_schema.answers WHERE question_id = $1 AND reported = 0',
         values: [`${el}`],
       };
 
@@ -161,18 +163,6 @@ app.get(`${prefix}/questions`, async (req, res) => {
         console.log(err);
       });
   });
-
-  // Dummy data
-  // const data = dummy.dummyQuestions;
-  // // Dummy questions
-  // const questions = data.results;
-  // // res.send(questions)
-  // A boolean from legacy code that is supposed to deal with whether there is more questions than
-  // // what should be shown somehow? Scrap or keep?
-  // const isMoreQuestions = false;
-
-  // // Client currently expects questions and isMoreQuestions
-  // res.send({ questions });
 });
 
 app.get(`${prefix}/moreAnswers`, async (req, res) => {
@@ -272,7 +262,6 @@ app.get(`${prefix}/moreAnswers`, async (req, res) => {
 });
 
 app.put(`${prefix}/answer/helpful`, (req, res) => {
-  // Undetermined if values below will remain needed or not yet
   const { answer_id } = req.body;
   pool.query(`UPDATE q_and_a_schema.answers SET helpfulness = helpfulness + 1 WHERE id = ${answer_id}`);
   res.sendStatus(204);
@@ -280,7 +269,6 @@ app.put(`${prefix}/answer/helpful`, (req, res) => {
 
 // ROUTE TO REPORT QUESTIONS
 app.put(`${prefix}/question/report`, (req, res) => {
-  // Undetermined if values below will remain needed or not yet
   const { question_id } = req.body;
   pool.query(`UPDATE q_and_a_schema.questions SET reported = reported + 1 WHERE question_id = ${question_id}`);
   res.sendStatus(204);
@@ -288,30 +276,72 @@ app.put(`${prefix}/question/report`, (req, res) => {
 
 // ROUTE TO REPORT ANSWERS
 app.put(`${prefix}/answer/report`, (req, res) => {
-  // Undetermined if values below will remain needed or not yet
   const { answer_id } = req.body;
-  pool.query(`UPDATE q_and_a_schema.answers SET reported = reported + 1 WHERE question_id = ${question_id}`);
+  pool.query(`UPDATE q_and_a_schema.answers SET reported = reported + 1 WHERE id = ${answer_id}`);
   res.sendStatus(204);
 });
 
 // ROUTE TO VOTE QUESTIONS HELPFUL
 app.put(`${prefix}/question/helpful`, (req, res) => {
-  // Undetermined if values below will remain needed or not yet
-  // const { question_id } = req.body;
+  const { question_id } = req.body;
+  pool.query(`UPDATE q_and_a_schema.questions SET question_helpfulness = question_helpfulness + 1 WHERE question_id = ${question_id}`);
   res.sendStatus(204);
 });
 
 // ROUTE TO ADD A NEW QUESTION
 app.post(`${prefix}/question/add`, (req, res) => {
-  // Undetermined if values below will remain needed or not yet
-  // const { product_id, ...questionSub } = req.body;
+  const { product_id, ...questionSub } = req.body;
+
+  const date = new Date();
+  const currentDate = moment(date).format('YYYY-MM-DD');
+
+  const text = 'INSERT INTO q_and_a_schema.questions(question_body, question_date, asker_name, question_helpfulness, reported, product_id) VALUES($1, $2, $3, $4, $5, $6) RETURNING *';
+  const values = [questionSub.body, currentDate, questionSub.name, 0, 0, product_id.toString()];
+
+  pool.query(text, values, (err, res) => {
+    if (err) {
+      console.log(err.stack);
+    } else {
+      console.log(res.rows[0]);
+    }
+  });
+
   res.sendStatus(201);
 });
 
 // ROUTE TO ADD AN ANSWER TO A QUESTION
 app.post(`${prefix}/answer/add`, (req, res) => {
-  // Undetermined if values below will remain needed or not yet
-  // const { question_id, ...answerSub } = req.query;
+  const { question_id, ...answerSub } = req.query;
+  const date = new Date();
+  const currentDate = moment(date).format('YYYY-MM-DD');
+
+  const text = 'INSERT INTO q_and_a_schema.answers(body, date, answerer_name, helpfulness, question_id, reported) VALUES($1, $2, $3, $4, $5, $6) RETURNING *';
+  const values = [answerSub.body, currentDate, answerSub.name, 0, question_id, 0];
+
+  pool.query(text, values, (err, res) => {
+    if (err) {
+      console.log(err.stack);
+    } else if (answerSub.photos) {
+      const findAnswer = 'SELECT * FROM q_and_a_schema.answers WHERE question_id = $1 ORDER BY id DESC LIMIT 1';
+      const value = [question_id];
+
+      pool.query(findAnswer, value, (err, res) => {
+        if (err) {
+          console.log(err.stack);
+        } else {
+          const photoInsert = 'INSERT INTO q_and_a_schema.photos(link, answer_id) VALUES($1, $2) RETURNING *';
+          const vals = [answerSub.photos, res.rows[0].id];
+
+          pool.query(photoInsert, vals, (error, res) => {
+            if (error) {
+              console.log(error.stack);
+            }
+          });
+        }
+      });
+    }
+  });
+
   res.sendStatus(201);
 });
 

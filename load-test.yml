@@ -1,0 +1,59 @@
+config:
+  target: http://localhost:3000
+  http:
+    timeout: 10
+    pool: 10
+  phases:
+    - duration: 20
+      arrivalRate: 5
+      name: Warm up
+    - duration: 500
+      arrivalRate: 5
+      rampTo: 1000
+      # maxVusers: 8000
+      name: Ramp up
+    # - duration: 250
+    #   arrivalRate: 650
+    #   rampTo: 850
+    #   maxVusers: 8000
+      # name: sustained load
+  payload:
+    path: "payload.csv"
+    fields:
+      - "product_id"
+      - "body"
+      - "date"
+      - "name"
+      - "helpfulness"
+      - "email"
+      - "question_id"
+      - "photos"
+scenarios:
+  - flow:
+    - get:
+        url: "/qa/questions?product_id={{ product_id }}"
+      name: "GET test"
+      weight: 2
+  
+  - flow:
+    - post:
+        url: "/qa/question/add"
+        json:
+          product_id: "{{ product_id }}"
+          body: "{{ body }}"
+          name: "{{ name }}"
+          email: "{{ email }}"
+      name: "POST question"
+      weight: 1
+      
+  - flow:
+    - post:
+        url: "/qa/answer/add"
+        json:
+          question_id: "{{ question_id }}"
+          body: "{{ body }}"
+          name: "{{ name }}"
+          email: "{{ email }}"
+          photos: "http://placeimg.com/640/480"
+      name: "POST answer"
+      weight: 1

@@ -2,58 +2,82 @@ config:
   target: http://localhost:3000
   http:
     timeout: 10
-    pool: 10
+    pool: 50
   phases:
-    - duration: 20
-      arrivalRate: 5
+    - duration: 10
+      arrivalRate: 100
       name: Warm up
-    - duration: 500
-      arrivalRate: 5
-      rampTo: 1000
-      # maxVusers: 8000
-      name: Ramp up
-    # - duration: 250
-    #   arrivalRate: 650
-    #   rampTo: 850
-    #   maxVusers: 8000
-      # name: sustained load
-  payload:
-    path: "payload.csv"
-    fields:
-      - "product_id"
-      - "body"
-      - "date"
-      - "name"
-      - "helpfulness"
-      - "email"
-      - "question_id"
-      - "photos"
+    - duration: 60
+      arrivalRate: 100
+      rampTo: 850
+      name: Ramp to 850
+  processor: "./generatePayload.js"
+
 scenarios:
   - flow:
+    - function: "generateProductID1"
     - get:
         url: "/qa/questions?product_id={{ product_id }}"
-      name: "GET test"
-      weight: 2
+    - function: "generateProductID2"
+    - get:
+        url: "/qa/questions?product_id={{ product_id }}"
   
   - flow:
+    - function: "generateProductID1"
+    - function: "generateBody"
+    - function: "generateName"
     - post:
         url: "/qa/question/add"
         json:
           product_id: "{{ product_id }}"
           body: "{{ body }}"
           name: "{{ name }}"
-          email: "{{ email }}"
-      name: "POST question"
-      weight: 1
+          email: "testemail@gmail.com"
+          
+    - function: "generateProductID2"
+    - function: "generateBody"
+    - function: "generateName"
+    - post:
+        url: "/qa/question/add"
+        json:
+          product_id: "{{ product_id }}"
+          body: "{{ body }}"
+          name: "{{ name }}"
+          email: "testemail@gmail.com"
       
   - flow:
+    - function: "generateQuestionID1"
+    - function: "generateBody"
+    - function: "generateName"
     - post:
         url: "/qa/answer/add"
         json:
           question_id: "{{ question_id }}"
           body: "{{ body }}"
           name: "{{ name }}"
-          email: "{{ email }}"
+          email: "testemail@gmail.com"
           photos: "http://placeimg.com/640/480"
-      name: "POST answer"
-      weight: 1
+          
+    - function: "generateQuestionID2"
+    - function: "generateBody"
+    - function: "generateName"
+    - post:
+        url: "/qa/answer/add"
+        json:
+          question_id: "{{ question_id }}"
+          body: "{{ body }}"
+          name: "{{ name }}"
+          email: "testemail@gmail.com"
+          photos: "http://placeimg.com/640/480"
+          
+    - function: "generateQuestionID3"
+    - function: "generateBody"
+    - function: "generateName"
+    - post:
+        url: "/qa/answer/add"
+        json:
+          question_id: "{{ question_id }}"
+          body: "{{ body }}"
+          name: "{{ name }}"
+          email: "testemail@gmail.com"
+          photos: "http://placeimg.com/640/480"

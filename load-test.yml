@@ -1,0 +1,83 @@
+config:
+  target: http://localhost:3000
+  http:
+    timeout: 10
+    pool: 50
+  phases:
+    - duration: 10
+      arrivalRate: 100
+      name: Warm up
+    - duration: 60
+      arrivalRate: 100
+      rampTo: 850
+      name: Ramp to 850
+  processor: "./generatePayload.js"
+
+scenarios:
+  - flow:
+    - function: "generateProductID1"
+    - get:
+        url: "/qa/questions?product_id={{ product_id }}"
+    - function: "generateProductID2"
+    - get:
+        url: "/qa/questions?product_id={{ product_id }}"
+  
+  - flow:
+    - function: "generateProductID1"
+    - function: "generateBody"
+    - function: "generateName"
+    - post:
+        url: "/qa/question/add"
+        json:
+          product_id: "{{ product_id }}"
+          body: "{{ body }}"
+          name: "{{ name }}"
+          email: "testemail@gmail.com"
+          
+    - function: "generateProductID2"
+    - function: "generateBody"
+    - function: "generateName"
+    - post:
+        url: "/qa/question/add"
+        json:
+          product_id: "{{ product_id }}"
+          body: "{{ body }}"
+          name: "{{ name }}"
+          email: "testemail@gmail.com"
+      
+  - flow:
+    - function: "generateQuestionID1"
+    - function: "generateBody"
+    - function: "generateName"
+    - post:
+        url: "/qa/answer/add"
+        json:
+          question_id: "{{ question_id }}"
+          body: "{{ body }}"
+          name: "{{ name }}"
+          email: "testemail@gmail.com"
+          photos: "http://placeimg.com/640/480"
+          
+    - function: "generateQuestionID2"
+    - function: "generateBody"
+    - function: "generateName"
+    - post:
+        url: "/qa/answer/add"
+        json:
+          question_id: "{{ question_id }}"
+          body: "{{ body }}"
+          name: "{{ name }}"
+          email: "testemail@gmail.com"
+          photos: "http://placeimg.com/640/480"
+          
+    - function: "generateQuestionID3"
+    - function: "generateBody"
+    - function: "generateName"
+    - post:
+        url: "/qa/answer/add"
+        json:
+          question_id: "{{ question_id }}"
+          body: "{{ body }}"
+          name: "{{ name }}"
+          email: "testemail@gmail.com"
+          photos: "http://placeimg.com/640/480"

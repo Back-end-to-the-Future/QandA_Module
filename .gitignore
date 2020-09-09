@@ -29,3 +29,6 @@ mongodb.js
 .vscode
 *.csv
 db.js
+
+# analytics
+newrelic.js

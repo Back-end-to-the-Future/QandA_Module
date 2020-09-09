@@ -6,6 +6,7 @@
 /* eslint-disable no-console */
 /* eslint-disable import/extensions */
 /* eslint-disable camelcase */
+require('newrelic');
 const express = require('express');
 const moment = require('moment');
 
@@ -301,8 +302,6 @@ app.post(`${prefix}/question/add`, (req, res) => {
   pool.query(text, values, (err, res) => {
     if (err) {
       console.log(err.stack);
-    } else {
-      console.log(res.rows[0]);
     }
   });
 
@@ -311,7 +310,7 @@ app.post(`${prefix}/question/add`, (req, res) => {
 
 // ROUTE TO ADD AN ANSWER TO A QUESTION
 app.post(`${prefix}/answer/add`, (req, res) => {
-  const { question_id, ...answerSub } = req.query;
+  const { question_id, ...answerSub } = req.body;
   const date = new Date();
   const currentDate = moment(date).format('YYYY-MM-DD');
 
@@ -321,7 +320,7 @@ app.post(`${prefix}/answer/add`, (req, res) => {
   pool.query(text, values, (err, res) => {
     if (err) {
       console.log(err.stack);
-    } else if (answerSub.photos) {
+    } else if (answerSub.photos !== null) {
       const findAnswer = 'SELECT * FROM q_and_a_schema.answers WHERE question_id = $1 ORDER BY id DESC LIMIT 1';
       const value = [question_id];
 

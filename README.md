@@ -34,6 +34,7 @@ web traffic at a minimum of 1000 requests per second under load.
  - Bootstrap
  - Express
  - Node.js
+ - PostgreSQL
  - Jest
  - Enzyme
  - Amazon Web Services

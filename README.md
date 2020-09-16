@@ -1,4 +1,18 @@
-# Questions and Answers Module
+# Delphi System Designs - Questions and Answers Microserver
+
+> Delphi System Designs is an e-commerce platform specializing in aftermarket automotive parts.
+This repository contains the code for the questions and answers microservice of this platforms e-commerce product pages.
+I inherited a legacy front-end code base to this application and was tasked with building out a scalable back-end that could handle
+web traffic at a minimum of 1000 requests per second under load.
+
+## Table of Contents
+
+1. [Related Projects](#related-projects)
+2. [Achievements and Optimizations](#achievements-and-optimizations)
+3. [Technologies Used](#technologies-used)
+4. [Requirements](#requirements)
+5. [Development](#development)
+6. [Questions and Answers API](#questions-and-answers-api)
 
 ## Related Projects
 
@@ -6,26 +20,41 @@
   - https://github.com/Back-end-to-the-Future/ratings-and-reviews-module
   - https://github.com/Back-end-to-the-Future/Zach_Proxy
 
-## Table of Contents
+## Achievements and Optimizations
 
-1. [Usage](#Usage)
-1. [Requirements](#requirements)
-1. [Development](#development)
+ - Seeded a PostgreSQL database with 35 million records
+ - Optimized PostgreSQL query times from 30+ seconds to 12ms through indexing
+ - Achieved a throughput of 1085 requests per second when load testing locally.
+ 
+ ![Alt Text](https://i.imgur.com/TCD7KhS.png)
+ 
+## Technologies Used
 
-## Usage
-
-> run npm start
-  - Note: This app will display a blank page if the instances
-      of the related modules above are not running.
+ - JavaScript
+ - React
+ - Bootstrap
+ - Express
+ - Node.js
+ - Jest
+ - Enzyme
+ - Amazon Web Services
+ - Artillery
+ - New Relic
 
 ## Requirements
 
-- Node 6.13.0
-- etc
+- Node 6.13.0 or greater
+- npm
 
 ## Development
 
 ### Installing Dependencies
+
+> The following commands will install the application dependencies, run webpack to compile the application and start the development server
+
+    npm install
+    npm run react-dev
+    npm run start
 
 From within the root directory:
 
